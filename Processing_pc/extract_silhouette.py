@@ -13,11 +13,6 @@ import json
 
 def extract_silhouette_svg(mask_path, output_svg_path, mm_per_pixel,
                             simplify_epsilon_frac=0.002, min_contour_area=50):
-    """
-    mm_per_pixel: real-world scale from Stage 1's capture metadata. Required -
-    this is what makes Outline Mode dimensionally accurate, unlike Detailed
-    Mode which deliberately stays in pixel space.
-    """
     src = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
     if src is None:
         raise FileNotFoundError(f"Could not load mask: {mask_path}")
@@ -32,9 +27,6 @@ def extract_silhouette_svg(mask_path, output_svg_path, mm_per_pixel,
 
     with open(output_svg_path, 'w') as svg_file:
         svg_file.write('<?xml version="1.0" encoding="utf-8"?>\n')
-        # viewBox/width/height now in mm, with a "mm" unit suffix - this SVG
-        # is real-world-scaled, opening it in Inkscape/Illustrator will show
-        # the true physical size, not just a pixel-dimension canvas
         svg_file.write(
             f'<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '
             f'width="{width_mm:.2f}mm" height="{height_mm:.2f}mm" '
@@ -76,8 +68,7 @@ def extract_silhouette_from_capture(mask_path, output_svg_path, json_path,
                                      simplify_epsilon_frac=0.002, min_contour_area=50):
     """
     Convenience wrapper: reads mm_per_pixel straight from the capture's JSON
-    metadata file (same file process_capture() already loads for tap_x/tap_y),
-    instead of requiring it as a separate manual argument.
+    metadata file
     """
     with open(json_path) as f:
         meta = json.load(f)
